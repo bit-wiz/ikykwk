@@ -1,0 +1,654 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# #   Group B
+#  Asignment no 02
+# 
+# 
+Perform the following operations using Python on the Air quality Data set , and Heart Diseases data sets: 
+
+     a. Data cleaning
+     b. Data integration
+     c. Data transformation
+     d. Error correcting
+      e. Data model building
+
+  Data set use:  1) Air quality Data set
+                 2) Heart Diseases data sets
+# In[1]:
+
+
+import pandas as pd
+import numpy as np
+df=pd.read_csv("AirQuality.csv",encoding='cp1252')
+
+
+# In[2]:
+
+
+df.head(5)
+
+
+# In[3]:
+
+
+df.describe()
+
+
+# In[4]:
+
+
+df.shape
+
+
+# In[5]:
+
+
+df.info()
+
+
+# In[6]:
+
+
+df.isnull().sum()
+
+
+# In[7]:
+
+
+df.count()
+
+
+# In[8]:
+
+
+df.describe()
+
+
+# In[ ]:
+
+
+
+
+
+#  #  a)  Cleaning the dataset
+# 
+
+# #  In this step we need to clean the data by adding and dropping the needed and unwanted data
+# #
+
+#  Dropping less valued columns :
+#  stn_code, agency, sampling_date, location_monitoring_station, 
+#  do not add much value to the data set in termsof information, 
+#  therefore we can drop those columns.
+# 
+# 
+# Changing the type to uniform format:
+# When you see the data set, you may notice thatthe Type Column has values such as 'Industrial Area' and 'Industrial Areas'-  both actually means are same , so let us remove such type of stuff and make it uniform
+# 
+# 
+# Creating a year column:
+# To see the trand over a time, we need year values for each row and also when you see in most of the values in the date column only has 'Year' value. so create a new column holding year value.
+# 
+# 
+# 
+# 
+# 
+
+# 1. Dropping columns  -  which do not provide more information
+# 2. Dropping row where data is not available
+
+# In[9]:
+
+
+df.info()
+
+
+# In[10]:
+
+
+#  Dropping columns which are not required
+df = df.drop(['stn_code','agency', 'location_monitoring_station'],axis=1)   
+
+
+# In[11]:
+
+
+df.isna().sum()
+
+
+# In[12]:
+
+
+df = df.dropna(subset=['date'])
+
+
+# In[13]:
+
+
+df.isna().sum()
+
+
+# In[14]:
+
+
+df.columns
+
+
+# # Changing the types to uniform format
+# 
+# Notice that the 'Types column has values such as 'Industrial Area' and 'Indistrial Areas'
+# Both are same and make it uniform
+
+# In[15]:
+
+
+df['type'].unique()
+
+
+# In[16]:
+
+
+types = {
+    
+    "Residential" : "K",
+    "Residential and others" : "RO",
+    "Industrial Area":"I" ,
+    "Industrial Areas" : "I",
+    "Industrial" : "I" ,
+    "Sensitive Area": "s",
+    "Sensitive Areas":"s",
+    "Sensitive":"s",
+    "NaN":"PRO",
+    "Residential, Rural and other Areas":"MO"
+ }
+
+
+# In[17]:
+
+
+df.type = df.type.replace(types)
+
+
+# In[18]:
+
+
+df['type'].unique()
+
+
+# In[19]:
+
+
+# Dislay first 5 rows
+
+df.head()
+
+
+# In[ ]:
+
+
+
+
+
+# In[20]:
+
+
+df.info()
+
+
+# In[21]:
+
+
+# convert date to 'date' format
+
+df['date']=pd.to_datetime(df['date'], errors="coerce")
+df.head(5)
+
+
+# In[22]:
+
+
+# Create a new column 'year'  from 'date' column
+
+df['year']=df.date.dt.year
+df.head()
+
+
+# In[ ]:
+
+
+
+
+
+# # Handling missing values
+
+# The columns such as SO2, NO2, rspm, pm2_5 are the one which contribute more to our analysis. So we need to remove Null values from those columns to avoid inaccuracy in the prediction. 
+# 
+# We use imputer from  sklearn.preprocessing   to fill the missing values in every column with the mean.
+# 
+
+# 
+
+# In[23]:
+
+
+#  define columns of importance, which shall be used regularely
+
+COLS = ['so2','no2', 'rspm', 'spm', 'pm2_5']
+
+
+# In[24]:
+
+
+df.info()
+
+
+# In[25]:
+
+
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+# invoking SimpleImputer to fill missing values
+
+imputer = SimpleImputer(missing_values = np.nan, strategy='mean')
+
+
+# In[26]:
+
+
+df[COLS] = imputer.fit_transform(df[COLS])
+
+
+# In[27]:
+
+
+df.head()
+
+
+# In[ ]:
+
+
+
+
+
+# # Data Transformation
+# Filtering, cleaning,
+# and other tranformations are another class of important operations.
+
+# Removing Duplicates: 
+# Duplicate rows may be found in a DataFrame for any number of reasons.
+
+# The DataFrame method duplicated returns a boolean Series indicating whether each
+# row is a duplicate or not:
+# 
+# The DataFrame method duplicated() returns a boolean Series indicating whether each
+# row is a duplicate or not
+# 
+# drop_duplicates() returns a DataFrame where the duplicated array is True:
+
+# In[28]:
+
+
+df.nunique()
+
+
+# In[29]:
+
+
+df.duplicated().sum()
+
+
+# In[30]:
+
+
+df.drop_duplicates()
+
+
+# In[ ]:
+
+
+
+
+All machine learning algorithms are based on mathematical operations
+
+
+1. Encoding:  To address the problems associatedwith categorical data,we can use encoding.
+               This is the process by which we convert a categorical variable nto a numerical form.
+               Here we will look at three  simple methods of encoding categorical data.
+
+2. Replacement: This is the rechnoque in which we replace the categorical data with a number. This is a simple replacement and doesnot involve much logical processing.
+    
+    
+    
+    
+# # Simple Replacement of Categorical Data with a Number
+
+# In[31]:
+
+
+df.head()
+
+
+# In[32]:
+
+
+df['type'].value_counts()
+
+
+# In[33]:
+
+
+df['type'].replace({  'MO':1, 'I':2, 's':3 , 'RO':4, 'K':5, 'RIRUO':6  }, inplace=True)
+
+
+# In[34]:
+
+
+df.info()
+
+
+# In[35]:
+
+
+df['type']
+
+
+# In[36]:
+
+
+from sklearn.preprocessing import LabelEncoder
+labelencoder = LabelEncoder()
+df['state'] =labelencoder.fit_transform(df['state'])
+df.head()
+
+
+# In[37]:
+
+
+# One-hot encoding is used to convert categorical variables into a format that can be readily used by machine learning algorithms.
+
+dfAndhra = df[df['state']==0]
+
+
+# In[38]:
+
+
+dfAndhra
+
+
+# In[39]:
+
+
+dfAndhra['location'].value_counts()
+
+
+# In[41]:
+
+
+from sklearn.preprocessing import OneHotEncoder
+onehotencoder = OneHotEncoder(sparse_output=False, handle_unknown='error', drop='first')
+
+
+# In[42]:
+
+
+pd.DataFrame(onehotencoder.fit_transform(dfAndhra[['location']]))
+
+
+# In[43]:
+
+
+dfAndhra['location'].value_counts()
+
+
+# # Error correction
+
+# In[44]:
+
+
+df.isnull().sum()
+
+
+# In[46]:
+
+
+# Convert columns to numeric with error handling
+df = df.apply(pd.to_numeric, errors='coerce')
+
+# Fill NaN values with median
+df = df.fillna(df.median())
+
+# Check for remaining NaN values
+print(df.isnull().sum())
+
+
+# Detecting and Filtering Outliers
+
+# In[47]:
+
+
+df.describe()
+
+
+# In[48]:
+
+
+df[df['so2']>100]=0
+
+
+# In[ ]:
+
+
+
+
+# Data contains:
+
+age - age in years
+sex - (1 = male; 0 = female)
+cp - chest pain type
+trestbps - resting blood pressure (in mm Hg on admission to the hospital)
+chol - serum cholestoral in mg/dl
+fbs - (fasting blood sugar > 120 mg/dl) (1 = true; 0 = false)
+restecg - resting electrocardiographic results
+thalach - maximum heart rate achieved
+exang - exercise induced angina (1 = yes; 0 = no)
+oldpeak - ST depression induced by exercise relative to rest
+slope - the slope of the peak exercise ST segment
+ca - number of major vessels (0-3) colored by flourosopy
+thal - 3 = normal; 6 = fixed defect; 7 = reversable defect
+target - have disease or not (1=yes, 0=no)
+# In[49]:
+
+
+import pandas as pd
+df = pd.read_csv('heart.csv')
+
+
+# In[50]:
+
+
+df.shape
+
+
+# In[51]:
+
+
+df.info()
+
+
+# In[52]:
+
+
+df.dtypes
+
+
+# In[53]:
+
+
+df.nunique()
+
+# change the categorical type to categorical variables
+df['sex'] =df['sex'] .astype('object')
+df['cp'] =df['cp'] .astype('object')
+df['fbs'] =df['fbs'] .astype('object')
+df['restecg'] =df['restecg'] .astype('object')
+
+
+# In[54]:
+
+
+df.info()
+
+
+# # Error correction
+# Check for the data character mistakes
+# Feature 'ca' ranges from 0-3, how ever df.unique() listed 0-4.  So let us find 4 and change them to NaN
+# 
+
+# In[55]:
+
+
+df['ca'].unique()
+
+
+# In[56]:
+
+
+df.ca.value_counts()
+
+
+# In[57]:
+
+
+df.loc[df['ca']==4]
+
+
+# In[58]:
+
+
+df.loc[df['ca']==4,'ca']=np.NaN
+
+
+# In[59]:
+
+
+df['ca'].unique()
+
+
+# In[60]:
+
+
+df.isna().sum()
+
+
+# In[61]:
+
+
+df=df.fillna(df.median())
+df.isnull().sum()
+
+
+# 
+# # Checking for duplicate row
+
+# In[62]:
+
+
+duplicates = df.duplicated(keep=False).sum()
+duplicates
+
+
+# # Statistical summary:
+# 
+# 1. check the min and max value for the categorical variables. (min-max)
+# sex(0-1),  CP(0-3), FBS(0-1), estecg(0-2), exang(0-1) Slope(0-2), CA(0-3), thal(0-3).
+# 
+# 2. Observe the mean, std, 25%  and 75% on the contineous variables.
+# 
+# 
+
+# In[63]:
+
+
+df.describe()
+
+df['sex'] = df.sex.replace({1:'Male', 0:'Female'})
+
+df['cp'] = df.cp.replace({0:'Typical_amgnia',
+                                        1:'atypical angima',
+                                        3: 'asymptotic'})
+
+df['exang']=df.exang.replace({1:'yes',0:'no'})
+df['fbs'] =df.fbs.replace({1:'True', 0:'False'})
+df['slope']=df.slope.replace({0:'upsloping',1:'flat', 2:'downsloping'})
+df['thal'] =df.thal.replace({1:"Fixed_defect", 2:'reversable_defect',3:'normal'})
+# # e. Data model building
+Metrics for Classification technique
+# In[64]:
+
+
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+from sklearn.metrics import classification_report,confusion_matrix,accuracy_score
+
+
+# In[65]:
+
+
+# Splitting our Dataset
+
+X = df.drop('target', axis=1)
+y = df.target
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+
+# Build support vector machine model
+# 
+# First, import the SVM module and create support vector classifier object by passing argument kernel as the linear kernel in SVC() function.
+# 
+# Then, fit your model on train set using fit() and perform prediction on the test set using predict()
+
+# In[66]:
+
+
+#Import svm model
+from sklearn import svm
+
+#Create a svm Classifier
+clf = svm.SVC(kernel='linear') # Linear Kernel
+
+#Train the model using the training sets
+clf.fit(X_train, y_train)
+
+#Predict the response for test dataset
+y_pred = clf.predict( X_test)
+
+Evaluating the Model
+Accuracy can be computed by comparing actual test set values and predicted values.
+# In[67]:
+
+
+from sklearn import metrics
+
+# Model Accuracy
+accuracy = metrics.accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+
+# In[68]:
+
+
+# Model Precision: what percentage of positive tuples are labeled as such?
+print("Precision:",metrics.precision_score(y_test, y_pred))
+
+# Model Recall: what percentage of positive tuples are labelled as such?
+print("Recall:",metrics.recall_score(y_test, y_pred))
+
+
+# In[ ]:
+
+
+
+

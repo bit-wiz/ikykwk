@@ -1,0 +1,445 @@
+#!/usr/bin/env python
+# coding: utf-8
+    # Visualize the data using Python libraries matplotlib, seaborn by plotting the graphs for assignment no. 2 and 3 ( Group B)  Air quality data set, Heart Diseases data,facebook dataset
+# In[50]:
+
+
+import  matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+import pandas as pd
+import seaborn as sns
+import numpy as np
+
+
+# In[51]:
+
+
+df = pd.read_csv('dataset_Facebook.csv',sep=';')
+df.head(5)
+
+
+# We use the group by function with Type as a variable and like as a factor to obtain total like for each Type group. Then we obtain the percentage for each Type group using the div() functionNext, the function plot.pie is used to obtain a pie diagram with arguments such as:
+# label that provides a user defined label for the variable on X axis
+# title gives title of the plot, autopct is used to display percentage values and colormap can be used to input your choice of colors
+
+# In[52]:
+
+
+ts = df.groupby('Type')['share'].sum()
+#ts = ts.div(ts.sum().astype(float)).round(2)*100
+ts 
+
+
+# In[53]:
+
+
+ts.plot.pie(label=('Type'), title = " PIE CHART WITH PERCENTAGE",colormap='brg', autopct='%1.0f%%')
+
+
+# 
+# 
+
+# In[54]:
+
+
+ts = df.groupby('Type')['like'].sum()
+#ts = ts.div(ts.sum().astype(float)).round(2)*100
+ts
+
+
+# In[55]:
+
+
+ts.plot.pie(label=('Type'), title = " PIE CHART WITH PERCENTAGE",colormap='brg', autopct='%1.0f%%')
+
+
+# To plot multiple pie charts, the argument subplot = True should be included within the plot.pie function.
+
+# In[56]:
+
+
+ts = pd.pivot_table(df, index=['Type'], columns=['Paid'], values=['share'], aggfunc='count')
+ts
+
+
+# In[57]:
+
+
+plt.figure(); 
+ts.plot.pie(title='MULTIPLE PIE CHARTS', colors=['darkcyan','orange','yellowgreen'],autopct='%.1f%%', subplots=True) 
+
+
+# In[58]:
+
+
+x=df['Type']
+y=df['share']
+
+#plotting the data
+
+plt.bar(x,y)
+#plt.title('Tips Data set')
+plt.xlabel('Type')
+plt.ylabel('Total Share')
+plt.show
+
+
+# Posts per month
+
+# In[59]:
+
+
+plt.figure(figsize=(7,7))
+
+objects = ('January', 'February', 'March', 'April','May','June','July','August','September','October','November','December')
+y_pos = np.arange(len(objects))
+
+plt.bar(y_pos, df.loc[:,'Post Month'].value_counts().values)
+plt.xticks(y_pos, objects, rotation=70)
+plt.ylabel('Number of posts')
+plt.title('Number of posts for each month')
+
+
+# .Posts per Weekday
+
+# In[60]:
+
+
+plt.figure(figsize=(7,7))
+
+objects = ('Monday', 'Tuesday', 'Wednesday', 'Thursday','Friday','Saturday','Sunday')
+y_pos = np.arange(len(objects))
+
+plt.bar(y_pos, df.loc[:,'Post Weekday'].value_counts().values)
+plt.xticks(y_pos, objects, rotation=70)
+plt.ylabel('Number of posts')
+plt.title('Number of posts for each weekday')
+
+
+# In[61]:
+
+
+# Post paid or free per Month and per Weekday
+
+
+# In[62]:
+
+
+plt.figure(figsize=(5,5))
+sns.countplot(x='Post Month',hue='Paid',data=df)
+plt.title("Number of posts: Free vs Paid per Month")
+
+plt.figure(figsize=(5,5)) 
+sns.countplot(x='Post Weekday',hue='Paid',data=df)
+plt.title("Number of posts: Free vs Paid per Weekday")
+
+
+# In[63]:
+
+
+plt.figure(figsize=(8,6))
+sns.countplot(x='Category',data=df,palette='viridis')
+plt.ylabel("# of Likes")
+plt.title("Number of Likes vs. Post Category")
+plt.savefig('catCount.png', bbox_inches='tight')
+
+
+# In[64]:
+
+
+plt.figure(figsize=(10,6))
+sns.countplot(x='Type',data=df,palette='viridis')
+#plt.ylim(0,750)
+#sns.despine(offset=4,bottom=True)
+plt.title("Number of Posts by Type")
+plt.ylabel("# of likes")
+#plt.legend(loc='upper left')
+plt.savefig('typeCount.png', bbox_inches='tight')
+
+
+# In[65]:
+
+
+plt.figure(figsize=(10,6))
+sns.countplot(x='Paid',data=df,palette='viridis')
+#sns.despine(offset=4,bottom=True)
+plt.title("likes/Post by Paid/Non-Paid Posts")
+plt.ylabel("# of Posts")
+plt.savefig('paidCount.png', bbox_inches='tight')
+
+
+# In[66]:
+
+
+plt.figure(figsize=(14,8))
+sns.distplot(df[df['like']<1000]['like'],bins=20,color='dodgerblue',hist_kws={'alpha':0.6})
+plt.xlim(0,1000)
+plt.xlabel("# of Likes",fontsize=15)
+plt.ylabel('Frequency',fontsize=15)
+plt.title('Distribution of Like/Post',fontsize=20)
+
+
+# In[67]:
+
+
+sns.distplot(df['Page total likes'],bins=20)
+plt.title("Distribution of Total Page Likes")
+
+
+# In[68]:
+
+
+sns.countplot(df['Post Month'],palette='viridis')
+
+
+# Category of posts whether paid or not
+
+# In[69]:
+
+
+plt.figure(figsize=(7,7))
+
+sns.countplot(x='Type',hue='Paid',data=df)
+plt.title("Number of posts: Paid vs Not Paid")
+plt.ylabel("Number of posts")
+
+
+# In[70]:
+
+
+sns.lmplot(x='Page total likes',y='like',
+           hue='Paid',data=df,fit_reg=True,
+          scatter_kws={'alpha':0.6})
+plt.legend()
+plt.ylim(0,1000)
+plt.ylabel("# of Likes")
+plt.title('# Page Likes vs. # Post Likes')
+
+
+# In[71]:
+
+
+plt.figure(figsize=(8,6))
+sns.boxplot(x=df['Category'],y=df['like'],data=df,palette='viridis')
+plt.ylim(0,750)
+plt.ylabel("# of Likes")
+plt.title("Number of Likes vs. Post Category")
+plt.savefig('catBox.png', bbox_inches='tight')
+
+
+# In[72]:
+
+
+plt.figure(figsize=(8,6))
+sns.boxplot(x='Category',y='like',data=df,hue='Paid',palette='viridis')
+plt.ylim(0,750)
+plt.ylabel("# of likes")
+plt.legend(loc='upper left')
+plt.title("Likes/Post by Category and if Posts were Paid")
+plt.savefig('catPaidCount.png', bbox_inches='tight')
+
+
+# In[73]:
+
+
+plt.figure(figsize=(10,6))
+sns.boxplot(x='Type',y='like',data=df,palette='viridis')
+plt.ylim(0,750)
+#sns.despine(offset=4,bottom=True)
+plt.title("Likes/Post by Post Type")
+plt.ylabel("# of likes")
+#plt.legend(loc='upper left')
+plt.savefig('typeBox.png', bbox_inches='tight')
+
+
+# In[74]:
+
+
+plt.figure(figsize=(10,6))
+sns.boxplot(x='Paid',y='like',data=df,palette='viridis')
+plt.ylim(0,500)
+#sns.despine(offset=4,bottom=True)
+plt.title("likes/Post by Paid/Non-Paid Posts")
+plt.ylabel("# of likes")
+plt.savefig('paidBox.png', bbox_inches='tight')
+
+
+# Comments
+
+# In[75]:
+
+
+plt.hist(df.loc[:,'comment'])
+plt.title("Comments per post distribution")
+
+
+# Likes
+
+# In[76]:
+
+
+df.isnull().sum()
+
+
+# In[77]:
+
+
+df = df.dropna(subset=['Paid'])
+
+
+# In[78]:
+
+
+plt.hist(df.loc[:,'like'])
+plt.title("Likes per post distribution")
+
+
+# In[79]:
+
+
+plt.hist(df.loc[:,'share'])
+plt.title("Shares per post distribution")
+
+
+# 
+
+# In[80]:
+
+
+plt.hist(df.loc[:,'Page total likes'])
+plt.title("Total pages likes")
+
+
+# In[81]:
+
+
+x=df['Post Weekday']
+y=df['comment']
+plt.scatter(x, y)
+
+
+# In[82]:
+
+
+x=df['Post Weekday']
+y=df['like']
+plt.scatter(x, y, color = 'hotpink',marker ="^")
+x=df['Post Weekday']
+y=df['share']
+plt.scatter(x, y,color = '#88c999',marker ="s")
+
+
+# In[83]:
+
+
+x=df['Post Weekday']
+y=df['share']
+plt.scatter(x, y)
+
+
+# In[84]:
+
+
+x=df['like']
+y=df['comment']
+plt.scatter(x, y,color = 'hotpink')
+
+
+# Catgorical scatterplot
+# The default representation of the data in catplot() uses a scatterplot. There are two different scatter plots in seaborn.
+
+# In[85]:
+
+
+sns.catplot(x='Type',y='share',data=df)
+
+
+# In[86]:
+
+
+sns.catplot(x='Type',y='like',data=df)
+
+
+# In[87]:
+
+
+sns.catplot(x='Type',y='comment',data=df)
+
+
+# In[88]:
+
+
+# plotting the data
+x=df['share']
+y=df['like']
+plt.plot(x,y)
+
+# add title to the plot
+plt.title("Linear graph", fontsize =25, color="green")
+
+# add label to the x-axis and y-axis
+
+plt.xlabel("X Data")
+plt.ylabel("Y Data")
+
+
+# In[90]:
+
+
+df1=pd.read_csv("AirQuality.csv",encoding='cp1252')
+
+
+# In[91]:
+
+
+df1 = df1.drop(['stn_code','agency', 'location_monitoring_station'],axis=1)   
+
+
+# In[92]:
+
+
+df1 = df1.dropna(subset=['date'])
+
+
+# In[93]:
+
+
+#  define columns of importance, which shall be used regularely
+
+COLS = ['so2','no2', 'rspm', 'spm', 'pm2_5']
+
+
+# In[94]:
+
+
+df1.isna().sum()
+
+
+# In[95]:
+
+
+df1.info()
+
+
+# In[96]:
+
+
+df1 = df1.dropna(subset=['type'])
+df1 = df1.dropna(subset=['so2'])
+df1 = df1.dropna(subset=['no2'])
+df1 = df1.dropna(subset=['rspm'])
+df1 = df1.dropna(subset=['spm'])
+df1 = df1.dropna(subset=['pm2_5'])
+
+
+# In[97]:
+
+
+df1.info()
+
+
+# In[ ]:
+
+
+
+

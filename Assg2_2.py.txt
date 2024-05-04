@@ -1,0 +1,281 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[40]:
+
+
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+# import missingno as msno # To visualize missing value
+import plotly.graph_objects as go # To Generate Graphs
+import plotly.express as px # To Generate box plot for statistical representation
+get_ipython().run_line_magic('matplotlib', 'inline')
+
+
+# In[13]:
+
+
+df = pd.read_csv('heart.csv')
+
+
+# In[14]:
+
+
+df.head(3)
+
+
+# In[15]:
+
+
+# Variables or features explanations:
+# age (Age in years)
+# sex : (1 = male, 0 = female)
+# cp (Chest Pain Type): [ 0: asymptomatic, 1: atypical angina, 2: non-anginal pain, 3: typical angina]
+# trestbps (Resting Blood Pressure in mm/hg )
+# chol (Serum Cholesterol in mg/dl)
+# fps (Fasting Blood Sugar > 120 mg/dl): [0 = no, 1 = yes]
+# restecg (Resting ECG): [0: showing probable or definite left ventricular hypertrophy by Estes’ criteria, 1: normal, 2: having ST-T wave abnormality]
+# thalach (maximum heart rate achieved)
+# exang (Exercise Induced Angina): [1 = yes, 0 = no]
+# oldpeak (ST depression induced by exercise relative to rest)
+# slope (the slope of the peak exercise ST segment): [0: downsloping; 1: flat; 2: upsloping]
+# ca [number of major vessels (0–3)
+# thal : [1 = normal, 2 = fixed defect, 3 = reversible defect]
+# target: [0 = disease, 1 = no disease]
+
+
+# In[16]:
+
+
+# 2. Data Cleaning
+# a) Check the data type.
+# The variables types are
+# Binary: sex, fbs, exang, target
+# Categorical: cp, restecg, slope, ca, thal
+# Continuous: age, trestbps, chol, thalac, oldpeak
+
+
+# In[17]:
+
+
+df.nunique()
+
+
+# In[18]:
+
+
+# b. Check for the data characters mistakes
+# feature ‘ca’ ranges from 0–3, however, df.nunique() listed 0–4. So lets find the ‘4’ and change them to NaN.
+
+
+# In[19]:
+
+
+df.loc[df['ca']==4]
+
+
+# In[20]:
+
+
+df.loc[df['ca']==4,'ca']=np.NaN
+
+
+# In[21]:
+
+
+df['ca'].unique()
+
+
+# In[22]:
+
+
+# 2. Feature ‘thal’ ranges from 1–3, however, df.nunique() listed 0–3. There are two values of ‘0’. So lets change them to NaN.
+
+
+# In[23]:
+
+
+df.thal.value_counts()
+
+
+# In[24]:
+
+
+df.loc[df['thal']==0,'thal']=np.NaN
+
+
+# In[25]:
+
+
+df[df['thal']==0]
+
+
+# In[26]:
+
+
+df['thal'].unique()
+
+
+# In[27]:
+
+
+# c) Check for missing values and replace them
+
+
+# In[28]:
+
+
+df.isnull().sum()
+
+
+# In[29]:
+
+
+#Replace the NaN with median.
+df = df.fillna(df.median())
+df.isnull().sum()
+
+
+# In[30]:
+
+
+# d) Check for duplicate rows
+duplicates = df.duplicated(keep=False).sum()
+duplicates
+
+
+# In[31]:
+
+
+duplicated=df[df.duplicated(keep=False)]
+
+
+# In[32]:
+
+
+duplicated.head()
+
+
+# In[33]:
+
+
+#e) Statistics summary
+df.describe()
+
+
+# In[34]:
+
+
+# Before we plot the outliers, let's change the labeling for better visualization and interpretation.
+df['target'] = df.target.replace({1: "Disease", 0: "No_disease"})
+df['sex'] = df.sex.replace({1: "Male", 0: "Female"})
+df['cp'] = df.cp.replace({0: "typical_angina", 
+                          1: "atypical_angina", 
+                          2:"non-anginal pain",
+                          3: "asymtomatic"})
+df['exang'] = df.exang.replace({1: "Yes", 0: "No"})
+df['fbs'] = df.fbs.replace({1: "True", 0: "False"})
+df['slope'] = df.slope.replace({0: "upsloping", 1: "flat",2:"downsloping"})
+df['thal'] = df.thal.replace({1: "fixed_defect", 2: "reversable_defect", 3:"normal"})
+
+
+# In[35]:
+
+
+df.plot(kind='box', subplots=True, layout=(2,7),
+sharex=False,sharey=False, figsize=(20, 10), 
+color='deeppink');
+
+
+# In[43]:
+
+
+data = [df[df['target'] == i]['chol'] for i in df['target'].unique()]
+
+# Create boxplot
+plt.figure(figsize=(8, 6))
+plt.boxplot(data, labels=df['target'].unique())
+
+# Add labels and title
+plt.xlabel('Target')
+plt.ylabel('Cholesterol')
+plt.title('Boxplot of Cholesterol by Target')
+
+# Show plot
+plt.show()
+
+
+# In[44]:
+
+
+sns.boxplot(x='target', y='oldpeak', data=df)
+
+
+# In[45]:
+
+
+# define continuous variable & plot
+continous_features = ['age','trestbps','chol','thalach','oldpeak']  
+def outliers(df_out, drop = False):
+    for each_feature in df_out.columns:
+        feature_data = df_out[each_feature]
+        Q1 = np.percentile(feature_data, 25.) # 25th percentile of the data of the given feature
+        Q3 = np.percentile(feature_data, 75.) # 75th percentile of the data of the given feature
+        IQR = Q3-Q1 #Interquartile Range
+        outlier_step = IQR * 1.5 #That's we were talking about above
+        outliers = feature_data[~((feature_data >= Q1 - outlier_step) & (feature_data <= Q3 + outlier_step))].index.tolist()  
+        if not drop:
+            print('For the feature {}, No of Outliers is {}'.format(each_feature, len(outliers)))
+        if drop:
+            df.drop(outliers, inplace = True, errors = 'ignore')
+            print('Outliers from {} feature removed'.format(each_feature))
+
+outliers(df[continous_features])
+
+
+# In[46]:
+
+
+outliers(df[continous_features],drop=True)
+
+
+# In[ ]:
+
+
+
+
+
+# In[47]:
+
+
+print(df.target.value_counts())
+
+# df['target'].value_counts().plot(kind='bar').set_title('Heart Disease Classes') #Simple plot
+
+fig, ax = plt.subplots(figsize=(5,4))
+name = ["Disease", "No_Disease"]
+ax = df.target.value_counts().plot(kind='bar')
+ax.set_title("Heart Disease Classes", fontsize = 13, weight = 'bold')
+ax.set_xticklabels (name, rotation = 0)
+
+# To calculate the percentage
+totals = []
+for i in ax.patches:
+    totals.append(i.get_height())
+total = sum(totals)
+for i in ax.patches:
+    ax.text(i.get_x()+.09, i.get_height()-50, \
+            str(round((i.get_height()/total)*100, 2))+'%', fontsize=14,
+                color='white', weight = 'bold')
+    
+plt.tight_layout()
+
+
+# In[ ]:
+
+
+
+

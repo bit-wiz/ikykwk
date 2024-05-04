@@ -1,0 +1,298 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+#  1. Perform the following operations using Python on the Facebook metrics data sets
+#    a. Create data subsets
+#    b. Merge Data
+#    c. Sort Data
+#   d. Transposing Data
+#    e. Shape and reshape Data
+# 
+#   Data Set  Facebook metrics data sets
+#   https://www.kaggle.com/datasets/masoodanzar/facebook-metrics?resource=download
+# 
+
+# In[1]:
+
+
+import pandas as pd
+
+
+# In[2]:
+
+
+# read_csv() - Read a comma-separated values (csv) file into DataFrame
+#  Read Facebook metrics data sets
+
+df = pd.read_csv('dataset_Facebook.csv', sep=';')
+
+
+# In[3]:
+
+
+# Display firt n rows of data set.   DatFrame.head(n)  return n rows from begning of the data set.  if 'n' is not specified ,then returns first 5 rows
+
+df.head()
+
+
+# In[4]:
+
+
+# print data set information
+# The info() method prints information about the DataFrame. 
+# The information contains the number of columns, column labels, column data types, memory usage, range index,
+#  and the number of cells in each column 
+
+
+df.info()
+
+
+# # a. Create data subsets 
+
+# In[5]:
+
+
+# 
+df_subset1 = df_subset1=df[['like','share']]
+print(df_subset1)
+
+
+# In[6]:
+
+
+df[['Type','like']]
+
+
+# In[7]:
+
+
+df_subset2=df[df['like']>100]
+print(df_subset2)
+
+
+# In[8]:
+
+
+df.loc[[1,3,7]]
+
+
+# In[9]:
+
+
+# df.iloc[row_start: row_end  , column_start : column_end]
+
+df.iloc[1:3,0:2]
+
+
+# In[10]:
+
+
+df.loc[5:8]
+
+
+# In[11]:
+
+
+df.loc[1:7,['like','share']]
+
+
+# # b. Merge Data
+
+# In[12]:
+
+
+# Create two subsets of a data sets  and merge data from these two subsets.
+
+
+# In[13]:
+
+
+# Display data set information
+
+df.info()
+
+
+# In[14]:
+
+
+# create  subset1 with data from row 1 to row 5 and columns  'Category','like','share','Type' of Facebook metric data set
+
+
+subset1 = df.loc[1:5,['Category','like','share','Type']]
+subset1
+
+
+# In[15]:
+
+
+# create  subset2 with data from row 11 to row 13 and in columns  'Category','like','share','Type' of Facebook metric data set
+
+subset2 = df.loc[11:13,['Category','like','share','Type']]
+subset2
+
+
+# In[16]:
+
+
+print(subset1, '\n\n', subset2)
+
+
+# In[17]:
+
+
+# merge subset1 and subset 2  along axis 0 
+# ( Axis 0 means row wise,axis 1 means column wise ) (  i.e Append rows of subset2 after rows of subset1)
+
+merge_set = pd.concat([subset1, subset2], axis=0)
+print(merge_set)
+
+
+# In[18]:
+
+
+# Display the size of merge set.  i.e after combining two sets
+
+merge_set.shape
+
+
+# In[ ]:
+
+
+
+
+
+# # Sorting Data
+
+# In[19]:
+
+
+# Sort data in ascending order of 'like'
+
+df.sort_values(by='like',ascending=True)
+
+
+# In[20]:
+
+
+#  Sort data in descending order of 'like' column in Facebbok metric data set and use 'mergesort' method for sorting
+
+df.sort_values(by ='like',ascending=False, kind='mergsort')
+
+
+# # d. Transposing Data
+
+# In[21]:
+
+
+# Get transpose of data.  DataFrame.transpose()  converts rows into column
+
+result= df.transpose()
+print(result)
+
+
+# In[22]:
+
+
+df.shape
+
+
+# In[23]:
+
+
+result.shape
+
+
+# In[24]:
+
+
+# df.loc[0:4,['like','share','Category','Type']]
+
+
+selective_df=pd.DataFrame(df.iloc[0:3],columns=['like','share','Category','Type'])
+print(selective_df.head(5))
+
+
+# # e. Shape and reshape Data
+# 
+# 1. melt()
+# 2. pivote_table()
+
+# In[27]:
+
+
+# create a subset with first  3 rows and 'category','post.month','post.Hour', 'paid'
+
+
+sub1 = df.loc[0:3,['Category', 'Post Month','Post Hour', 'Paid']]
+
+sub1.melt(id_vars=['Category'])
+
+
+# In[ ]:
+
+
+
+
+
+# In[31]:
+
+
+# A PivotTable is an interactive way to quickly summarize large amounts of data
+# pivot() is the complete opposite of melt()
+del selective_df['Type']
+pivote_table=pd.pivot_table(selective_df,index=['Category'])
+print(pivote_table)
+
+
+# In[32]:
+
+
+pivote_table.shape
+
+
+# In[33]:
+
+
+pivote_table.reset_index(inplace=True)
+print(pivote_table)
+
+
+# In[34]:
+
+
+pivote_table.melt(id_vars=['like','share'])
+
+
+# In[35]:
+
+
+# Example :
+
+home_expendature = { "Month":   ['Jan'      ,'Jan'    ,'Jan'      ,'feb'          ,'feb'      ,'march'   ,'march'],
+                    "category": ['transport','grocery','household','entertainment','transport','grocery','household'],
+                    "amount"  : [74,          235,      175,        100,            115,        240,      225]
+                   }
+
+home_expendaturedf=pd.DataFrame(home_expendature)
+print(home_expendaturedf)
+
+
+# In[36]:
+
+
+pd.pivot_table(home_expendaturedf,index=['category','Month'])
+
+
+# 
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
