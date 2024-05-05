@@ -1,0 +1,44 @@
+
+su - samyak
+
+sudo mkdir analyzelogs
+
+ls
+
+sudo chmod -R 777 analyzelogs/
+
+sudo chown -R samyak analyzelogs/
+
+sudo cp /home/samyak/Desktop/analyselogs/* ~/analyzelogs/
+
+cd analyzelogs/
+
+ls -ltr
+
+sudo chmod +r * .*
+
+export CLASSPATH="$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-core-2.9.0.jar:$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-client-common-2.9.0.jar:$HADOOP_HOME/share/hadoop/common/hadoop-common-2.9.0.jar:/home/samyak/analyzelogs/:$HADOOP_HOME/lib/"
+
+javac -d javac -d . log_mapper.java log_reducer.java log_analysis_main.java
+
+cd loganalysis/
+
+ls
+
+cd ..
+
+jar -cfm analyzelogs.jar Manifest.txt loganalysis/*.class
+
+start-dfs.sh
+
+start-yarn.sh
+
+jps
+
+sudo mkdir ~/input2000
+
+sudo cp access_log_short_csv.csv ~/input2000/
+
+$HADOOP_HOME/bin/hdfs dfs -put ~/input2000 /
+
+hadoop jar analyzelogs.jar /input2000 /output2000

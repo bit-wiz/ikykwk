@@ -1,0 +1,201 @@
+Write an application using HiveQL for flight information system which will include 
+A.	Creating,Dropping,and altering Databasetables. 
+B.	Creating an external Hive table. 
+C.	Load table with data,insert new values and field in the table , Join tables
+	with Hived. 
+D. 	Create index on FlightInformationTable
+E.	Find the average departure delay per day in 2015
+
+
+
+
+HIVE
+1. Hive - Create Database
+hive> show databases;
+OK
+default
+Time taken: 0.024 seconds, Fetched: 1 row(s)
+hive> create database flightinfo;
+OK
+Time taken: 0.178 seconds
+hive> show databases;
+OK
+default
+flightinfo
+Time taken: 0.027 seconds, Fetched: 2 row(s)		T
+
+
+2. Hive - Drop Database
+hive> drop database if exists flightinfo;
+OK
+Time taken: 0.051 seconds
+hive> show databases;
+OK
+default
+Time taken: 0.023 seconds, Fetched: 1 row(s)
+
+
+3. hive> use flightinfo; // to use flightinfo databases.
+
+
+A.	Creating,Dropping,and altering Databasetables. 
+Internal Table
+Create Table:
+hive> create table if not exists employee(empid smallint, ename string, address string,dob date) row format delimited
+    > fields terminated by ','
+    > lines terminated by '\n'
+    > stored as textfile;
+OK
+hive> describe flightinfo.employee;
+
+
+Hive - Alter Table
+Rename a Table
+ hive> alter table flightinfo.employee rename to flightinfo.employee_details;
+OK
+Adding column
+hive> alter table flightinfo.employee add columns(salary int);
+OK
+Change Column
+hive> alter table flightinfo.employee change ename emp_name string;
+OK
+Delete or Replace Column
+hive> alter table flightinfo.employee replace columns(empid smallint, ename string,address string);
+hive> describe flightinfo.employee;
+OK
+empid               	smallint            	                    
+ename               	string              	                    
+address             	string        
+Dropping DatabaseTable
+hive> drop table flightinfo.employee;
+OK
+
+
+B.	Creating an external Hive table. 
+hduser1@samyak-Latitude-E6430:~$ cd /usr/local/hadoop/bin
+hduser1@samyak-Latitude-E6430:/usr/local/hadoop/bin$ hdfs dfs -mkdir /hivedirectory;
+hduser1@samyak-Latitude-E6430:/usr/local/hadoop/bin$ hdfs dfs -put /home/samyak/Desktop/student.csv  /hivedirectory;
+hduser1@samyak-Latitude-E6430:~$ hive
+
+
+hive> create external table studentlist(id int,fname string,lname string,year string, major string)
+    > row format delimited
+    > fields terminated by ','
+    > location '/hivedirectory';
+OK
+hive> select * from studentlist;
+OK
+1	jane	doe	senior	mathematics 
+2	john	smith	junior	engineering
+Time taken: 0.743 seconds, Fetched: 2 row(s)
+Create the schema for a managed table.
+hive> create  table student(id int,fname string,lname string,year string, major string)
+    > row format delimited
+    > fields terminated by ','
+    > lines terminated by '\n'
+    > stored as textfile;
+Move the external table data to the managed table.
+hive> INSERT OVERWRITE TABLE student SELECT * FROM studentlist;
+hive> select * from student;
+hive> drop table studentlist; // drop external table
+
+
+C.	Load table with data,insert new values and field in the table , Join tables with Hived.
+
+
+CREATE TABLE IF NOT EXISTS flightInfo2015
+(
+YEAR SMALLINT,
+MONTH SMALLINT,
+DAY SMALLINT,
+DAY_OF_WEEK SMALLINT,
+AIRLINE STRING,
+FLIGHT_NUMBER TINYINT,
+TAIL_NUMBER STRING,
+ORIGIN_AIRPORT STRING,
+DESTINATION_AIRPORT STRING,
+SCHEDULED_DEPARTURE SMALLINT,
+DEPARTURE_TIME SMALLINT ,
+DEPARTURE_DELAY SMALLINT,
+TAXI_OUT TINYINT,
+WHEELS_OFF SMALLINT,
+SCHEDULED_TIME TINYINT,
+ELAPSED_TIME TINYINT,
+AIR_TIME TINYINT,
+DISTANCE TINYINT,
+WHEELS_ON SMALLINT,
+TAXI_IN SMALLINT,
+SCHEDULED_ARRIVAL SMALLINT,
+ARRIVAL_TIME SMALLINT,
+ARRIVAL_DELAY SMALLINT,
+DIVERTED SMALLINT,
+CANCELLED SMALLINT,
+CANCELLATION_REASON STRING,
+AIR_SYSTEM_DELAY SMALLINT,
+SECURITY_DELAY SMALLINT,
+AIRLINE_DELAY SMALLINT,
+LATE_AIRCRAFT_DELAY SMALLINT,
+WEATHER_DELAY SMALLINT
+
+
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n' 
+STORED AS TEXTFILE
+
+
+hive> create table if not exists airline(iata_code string,  airline string) ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > LINES TERMINATED BY '\n' 
+    > STORED AS TEXTFILE;
+
+
+hive>create table if not exists airport(iata_code string, airport string, city string,  state string, country string, lattitude string, longitude string) ROW FORMAT DELIMITED
+    > FIELDS TERMINATED BY ','
+    > LINES TERMINATED BY '\n' 
+    > STORED AS TEXTFILE;
+OK
+hive> load data local inpath '/home/samyak/Downloads/archive/flights.csv' into table FlightInfo2015;
+hive> load data local inpath '/home/samyak/Downloads/archive/airlines.csv' into table airline;
+hive> load data local inpath '/home/samyak/Downloads/archive/airports.csv' into table airport;
+
+
+Join table airline and flightinfo2015
+
+
+create table flight98 as select * from flightinfo2015 where flight_number=98 ;
+
+
+ JOIN Operation on Hive tables:
+1. Display  year,month,day,day_of_week,airline,flight_number,origin_airport,destination_airport, airline name  by joining flight98 with airline.(Inner join)
+hive> select year,month,day,day_of_week,f.airline,flight_number,origin_airport,destination_airport,  a.airline from flight98 f  join airline a on f.airline=a.iata_code;
+2. Display information about the airline which will not provide services by joining flight98 & airline. (Right Outer Join)
+hive> select year,month,day,day_of_week,f.airline,flight_number,origin_airport,destination_airport,  a.airline from flight98 f right join airline a on f.airline=a.iata_code where flight_number is NULL;
+
+
+3.Solve query 2 using Left outer Join
+
+
+hive> select year,month,day,day_of_week,f.airline,flight_number,origin_airport,destination_airport,  a.airline from flight98 f left join airline a on f.airline=a.iata_code where flight_number is NULL;
+
+
+4 List all record by joining flight98 and airline.( full outer join)
+hive> select year,month,day,day_of_week,f.airline,flight_number,origin_airport,destination_airport, a.airline from flight98 f full outer join airline a on f.airline=a.iata_code;
+
+
+D. [10] Create index on origin_airport field
+hive> CREATE INDEX f08_index ON TABLE flightinfo2015 (Origin_airport) AS 
+'COMPACT' WITH DEFERRED REBUILD;
+hive> ALTER INDEX f08_index ON flightinfo2008 REBUILD;
+hive>SHOW INDEXES ON FlightInfo2008;
+[11] Find average deparature delay for flight number 98 day of week wise.
+
+
+hive> select day_of_week,AVG(DEPARTURE_DELAY) from flight98 group by day_of_week;
+hive> select day_of_week,AVG(DEPARTURE_DELAY) from flightinfo2015 group by day_of_week;
+hive> select day_of_week,AVG(DEPARTURE_DELAY) from flightinfo2015 group by day_of_week having flight_number=98;
+
+
+
+
