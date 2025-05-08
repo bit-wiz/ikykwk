@@ -1,0 +1,1 @@
+OMPI_MCA_rmaps_base_oversubscribe=true
